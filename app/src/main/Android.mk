@@ -37,7 +37,7 @@ LOCAL_STATIC_ANDROID_LIBRARIES := \
 
 LOCAL_PACKAGE_NAME := Jelly
 
-LOCAL_OVERRIDES_PACKAGES := Browser Browser2 ViaBrowser Chromium Quark Quarks Bolt webview
+LOCAL_OVERRIDES_PACKAGES := Browser ViaBrowser Chromium Quark Quarks Bolt Browser2
 
 LOCAL_PROGUARD_FLAG_FILES := ../../proguard-rules.pro
 

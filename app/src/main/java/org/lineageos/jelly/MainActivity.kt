@@ -122,7 +122,6 @@ class MainActivity : WebViewExtActivity(), SearchBarController.OnCancelListener,
     private lateinit var mToolbarSearchBar: RelativeLayout
     private var mLastActionBarDrawable: Drawable? = null
     private var mThemeColor = 0
-    private var mWaitingDownloadUrl: String? = null
     private var mUrlIcon: Bitmap? = null
     private var mIncognito = false
     private var mCustomView: View? = null
@@ -304,31 +303,6 @@ class MainActivity : WebViewExtActivity(), SearchBarController.OnCancelListener,
                 GeolocationPermissions.getInstance().clearAll()
                 mCallback(mOrigin, true, true)
             }
-            STORAGE_PERM_REQ -> if (hasStoragePermission() && mWaitingDownloadUrl != null) {
-                downloadFileAsk(mWaitingDownloadUrl, null, null)
-            } else {
-                if (shouldShowRequestPermissionRationale(
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    )
-                ) {
-                    AlertDialog.Builder(this)
-                        .setTitle(R.string.permission_error_title)
-                        .setMessage(R.string.permission_error_storage)
-                        .setCancelable(false)
-                        .setPositiveButton(
-                            getString(R.string.permission_error_ask_again)
-                        ) { _: DialogInterface?, _: Int -> requestStoragePermission() }
-                        .setNegativeButton(
-                            getString(R.string.dismiss)
-                        ) { dialog: DialogInterface, _: Int -> dialog.dismiss() }
-                        .show()
-                } else {
-                    Snackbar.make(
-                        mCoordinator, getString(R.string.permission_error_forever),
-                        Snackbar.LENGTH_LONG
-                    ).show()
-                }
-            }
         }
     }
 
@@ -495,12 +469,6 @@ class MainActivity : WebViewExtActivity(), SearchBarController.OnCancelListener,
 
     override fun downloadFileAsk(url: String?, contentDisposition: String?, mimeType: String?) {
         val fileName = URLUtil.guessFileName(url, contentDisposition, mimeType)
-        if (!hasStoragePermission()) {
-            mWaitingDownloadUrl = url
-            requestStoragePermission()
-            return
-        }
-        mWaitingDownloadUrl = null
         AlertDialog.Builder(this)
             .setTitle(R.string.download_title)
             .setMessage(getString(R.string.download_message, fileName))
@@ -569,16 +537,6 @@ class MainActivity : WebViewExtActivity(), SearchBarController.OnCancelListener,
         }
         sheet.setContentView(view)
         sheet.show()
-    }
-
-    private fun requestStoragePermission() {
-        val permissionArray = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        requestPermissions(permissionArray, STORAGE_PERM_REQ)
-    }
-
-    private fun hasStoragePermission(): Boolean {
-        val result = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        return result == PackageManager.PERMISSION_GRANTED
     }
 
     private fun requestLocationPermission() {
@@ -867,7 +825,6 @@ class MainActivity : WebViewExtActivity(), SearchBarController.OnCancelListener,
         private val TAG = MainActivity::class.java.simpleName
         private const val PROVIDER = "org.lineageos.jelly.fileprovider"
         private const val STATE_KEY_THEME_COLOR = "theme_color"
-        private const val STORAGE_PERM_REQ = 423
         private const val LOCATION_PERM_REQ = 424
     }
 }
